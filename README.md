@@ -17,5 +17,7 @@
   <img width="12" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg" height="42" alt="Vue.js" />
   <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" height="42" alt="Git" />
+  <img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/codex-color.svg" height="42" alt="Codex" />
+  <img width="12" />
+  <img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/claudecode-color.svg" height="42" alt="Claude Code" />
 </div>
