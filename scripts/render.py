@@ -178,11 +178,11 @@ def render_stats(user, today):
     return panel("stats", f"last 12 months · {today:%d %b %Y}", "\n".join(out))
 
 
-def render_languages(user):
+def render_languages(user, login):
     # Every active repo counts the same, so one repo with vendored JS can't drown out the rest.
     totals = {}
     for r in user["repos"]:
-        if r["isArchived"]:
+        if r["isArchived"] or r["name"] == login:  # the profile repo's own scripts aren't project work
             continue
         sizes = {e["node"]["name"]: e["size"] for e in r["languages"]["edges"] if e["node"]["name"] not in MARKUP}
         repo_total = sum(sizes.values())
@@ -265,7 +265,7 @@ def main():
 
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "stats.svg").write_text(render_stats(user, today))
-    (args.out / "languages.svg").write_text(render_languages(user))
+    (args.out / "languages.svg").write_text(render_languages(user, args.login))
     if args.readme:
         update_readme(args.readme, render_recent(user, args.login))
 
