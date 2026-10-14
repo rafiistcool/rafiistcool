@@ -1,0 +1,53 @@
+name: profile
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["scripts/**", ".github/workflows/profile.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profile
+
+env:
+  BOT_NAME: github-actions[bot]
+  BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: Platane/snk/svg-only@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/snake.svg?color_snake=#f5f5f7&color_dots=#1c1c1e,#4d3209,#8a5508,#c97a06,#ff9f0a
+
+      - name: Render stats, languages and the recent list
+        env:
+          # Set a PROFILE_TOKEN secret (classic PAT, read:user) to count private contributions too.
+          GITHUB_TOKEN: ${{ secrets.PROFILE_TOKEN || secrets.GITHUB_TOKEN }}
+        run: python3 scripts/render.py --out dist --readme README.md
+
+      - name: Publish widgets to the output branch
+        working-directory: dist
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          git init -q -b output
+          git add -A
+          git -c user.name="$BOT_NAME" -c user.email="$BOT_EMAIL" commit -qm "Update profile widgets"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" output
+
+      - name: Commit README if the recent list changed
+        run: |
+          git diff --quiet README.md && exit 0
+          git -c user.name="$BOT_NAME" -c user.email="$BOT_EMAIL" commit -qm "Update recently pushed repos" README.md
+          git push -q
