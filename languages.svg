@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="495" height="210" viewBox="0 0 495 210" role="img" aria-label="languages">
+  <style>
+    text { font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace; }
+    .num { fill: #f5f5f7; font-size: 26px; font-weight: 700; }
+    .lbl { fill: #98989d; font-size: 12px; }
+    .dim { fill: #5a5a5f; font-size: 11px; }
+  </style>
+  <rect x="1" y="9" width="493" height="200" rx="10" fill="#161618" stroke="#2c2c2e" stroke-width="1.5"/>
+  <rect x="20" y="7" width="81" height="4" fill="#161618"/>
+  <text x="28" y="13" fill="#ff9f0a" font-size="12" font-weight="700">languages</text>
+  <rect x="347" y="7" width="128" height="4" fill="#161618"/>
+  <text x="467" y="13" text-anchor="end" class="dim">averaged per repo</text>
+  <clipPath id="bar"><rect x="28" y="50" width="439" height="10" rx="5"><animate attributeName="width" values="0;0;439" keyTimes="0;0.100;1" dur="1.000s" fill="freeze" calcMode="spline" keySplines="0 0 1 1; .2 .8 .2 1"/></rect></clipPath>
+  <rect x="28" y="50" width="439" height="10" rx="5" fill="#1c1c1e"/>
+  <g clip-path="url(#bar)">
+    <rect x="28.0" y="50" width="141.3" height="10" fill="#ff9f0a"/>
+    <rect x="168.8" y="50" width="99.0" height="10" fill="#8fb8de"/>
+    <rect x="267.3" y="50" width="92.6" height="10" fill="#a6dcef"/>
+    <rect x="359.4" y="50" width="77.5" height="10" fill="#ff8fa3"/>
+    <rect x="436.4" y="50" width="20.3" height="10" fill="#ffc27a"/>
+    <rect x="456.3" y="50" width="11.2" height="10" fill="#3a3a3c"/>
+  </g>
+  <g><animate attributeName="opacity" values="0;0;1" keyTimes="0;0.500;1" dur="0.800s" fill="freeze"/><circle cx="33" cy="102" r="5" fill="#ff9f0a"/><text x="46" y="106" fill="#f5f5f7" font-size="14">Python</text><text x="228" y="106" text-anchor="end" class="lbl">32.1%</text></g>
+  <g><animate attributeName="opacity" values="0;0;1" keyTimes="0;0.540;1" dur="0.870s" fill="freeze"/><circle cx="259" cy="102" r="5" fill="#8fb8de"/><text x="272" y="106" fill="#f5f5f7" font-size="14">QML</text><text x="454" y="106" text-anchor="end" class="lbl">22.4%</text></g>
+  <g><animate attributeName="opacity" values="0;0;1" keyTimes="0;0.574;1" dur="0.940s" fill="freeze"/><circle cx="33" cy="136" r="5" fill="#a6dcef"/><text x="46" y="140" fill="#f5f5f7" font-size="14">JavaScript</text><text x="228" y="140" text-anchor="end" class="lbl">21.0%</text></g>
+  <g><animate attributeName="opacity" values="0;0;1" keyTimes="0;0.604;1" dur="1.010s" fill="freeze"/><circle cx="259" cy="136" r="5" fill="#ff8fa3"/><text x="272" y="140" fill="#f5f5f7" font-size="14">TypeScript</text><text x="454" y="140" text-anchor="end" class="lbl">17.5%</text></g>
+  <g><animate attributeName="opacity" values="0;0;1" keyTimes="0;0.630;1" dur="1.080s" fill="freeze"/><circle cx="33" cy="170" r="5" fill="#ffc27a"/><text x="46" y="174" fill="#f5f5f7" font-size="14">Vue</text><text x="228" y="174" text-anchor="end" class="lbl">4.5%</text></g>
+  <g><animate attributeName="opacity" values="0;0;1" keyTimes="0;0.652;1" dur="1.150s" fill="freeze"/><circle cx="259" cy="170" r="5" fill="#3a3a3c"/><text x="272" y="174" fill="#f5f5f7" font-size="14">other</text><text x="454" y="174" text-anchor="end" class="lbl">2.4%</text></g>
+</svg>
