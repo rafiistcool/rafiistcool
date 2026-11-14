@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the profile widgets (stats.svg, languages.svg) and the README's recent-repos list.
+"""Render the profile widgets (stats.svg, languages.svg, hero.svg) and the README's recent-repos list.
 
 Stdlib only. Reads public data through the GitHub GraphQL API:
 
@@ -16,28 +16,20 @@ import urllib.request
 from html import escape
 from pathlib import Path
 
-# Omarchy "starship" theme, shared with scripts/hero.py.
-THEME = {
-    "wall": "#0e0e10",
-    "bg": "#161618",
-    "panel": "#1c1c1e",
-    "border": "#2c2c2e",
-    "fg": "#f5f5f7",
-    "muted": "#98989d",
-    "dim": "#5a5a5f",
-    "accent": "#ff9f0a",
-    "blue": "#8fb8de",
-    "cyan": "#a6dcef",
-    "red": "#ff5f4a",
-}
+from hero import hero
+from theme import FONT, THEME
+
 LANG_COLORS = ["#ff9f0a", "#8fb8de", "#a6dcef", "#ff8fa3", "#ffc27a", "#b8a99a"]
 OTHER_COLOR = "#3a3a3c"
 MARKUP = {"CSS", "SCSS", "HTML", "Dockerfile", "Makefile"}
 MIN_REPO_BYTES = 1024
-FONT = "ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace"
+# A repo someone else owns (an organisation's, say) counts as a project of mine while I have at least
+# MIN_OUTSIDE_COMMITS commits in it over the last ACTIVE_DAYS days.
+MIN_OUTSIDE_COMMITS = 10
+ACTIVE_DAYS = 90
 
 QUERY = """
-query($login: String!, $cursor: String) {
+query($login: String!, $cursor: String, $since: DateTime!) {
   user(login: $login) {
     followers { totalCount }
     pullRequests { totalCount }
@@ -47,17 +39,26 @@ query($login: String!, $cursor: String) {
         weeks { contributionDays { date contributionCount } }
       }
     }
+    recent: contributionsCollection(from: $since) {
+      commitContributionsByRepository(maxRepositories: 100) {
+        contributions { totalCount }
+        repository { ...repo }
+      }
+    }
     repositories(first: 100, after: $cursor, ownerAffiliations: OWNER, privacy: PUBLIC,
                  isFork: false, orderBy: {field: PUSHED_AT, direction: DESC}) {
       pageInfo { hasNextPage endCursor }
-      nodes {
-        name url description isPrivate isArchived
-        primaryLanguage { name }
-        languages(first: 20, orderBy: {field: SIZE, direction: DESC}) {
-          edges { size node { name } }
-        }
-      }
+      nodes { ...repo }
     }
+  }
+}
+
+fragment repo on Repository {
+  name url description isPrivate isFork isArchived pushedAt
+  owner { login }
+  primaryLanguage { name }
+  languages(first: 20, orderBy: {field: SIZE, direction: DESC}) {
+    edges { size node { name } }
   }
 }
 """
@@ -79,15 +80,32 @@ def graphql(token, variables):
 
 
 def fetch(login, token):
-    user = graphql(token, {"login": login, "cursor": None})
+    since = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=ACTIVE_DAYS)
+    variables = {"login": login, "since": since.strftime("%Y-%m-%dT%H:%M:%SZ")}
+    user = graphql(token, {**variables, "cursor": None})
     repos = list(user["repositories"]["nodes"])
     page = user["repositories"]["pageInfo"]
     while page["hasNextPage"]:
-        more = graphql(token, {"login": login, "cursor": page["endCursor"]})["repositories"]
+        more = graphql(token, {**variables, "cursor": page["endCursor"]})["repositories"]
         repos += more["nodes"]
         page = more["pageInfo"]
     # The query already filters on PUBLIC; double-check so a broader token can never leak a private repo.
     user["repos"] = [r for r in repos if not r["isPrivate"]]
+    outside = [
+        c["repository"]
+        for c in user["recent"]["commitContributionsByRepository"]
+        if c["contributions"]["totalCount"] >= MIN_OUTSIDE_COMMITS
+        and c["repository"]["owner"]["login"].lower() != login.lower()
+        and not c["repository"]["isPrivate"]
+        and not c["repository"]["isFork"]
+    ]
+    # What the languages, the recent list and the hero show, newest push first. The profile repo's own
+    # scripts aren't project work.
+    user["projects"] = sorted(
+        (r for r in user["repos"] + outside if not r["isArchived"] and r["name"] != login),
+        key=lambda r: r["pushedAt"],
+        reverse=True,
+    )
     return user
 
 
@@ -178,12 +196,10 @@ def render_stats(user, today):
     return panel("stats", f"last 12 months · {today:%d %b %Y}", "\n".join(out))
 
 
-def render_languages(user, login):
-    # Every active repo counts the same, so one repo with vendored JS can't drown out the rest.
+def render_languages(user):
+    # Every project counts the same, so one repo with vendored JS can't drown out the rest.
     totals = {}
-    for r in user["repos"]:
-        if r["isArchived"] or r["name"] == login:  # the profile repo's own scripts aren't project work
-            continue
+    for r in user["projects"]:
         sizes = {e["node"]["name"]: e["size"] for e in r["languages"]["edges"] if e["node"]["name"] not in MARKUP}
         repo_total = sum(sizes.values())
         if repo_total < MIN_REPO_BYTES:
@@ -226,10 +242,10 @@ def render_languages(user, login):
     return panel("languages", "averaged per repo", "\n".join(out))
 
 
-def render_recent(user, login, limit=5):
+def render_recent(user, limit=5):
     lines = []
-    for r in user["repos"]:
-        if r["name"] == login or r["isArchived"] or not r["description"]:
+    for r in user["projects"]:
+        if not r["description"]:
             continue
         lang = (r["primaryLanguage"] or {}).get("name")
         desc = r["description"].strip().rstrip(".").replace("<", "&lt;").replace(">", "&gt;")
@@ -265,9 +281,10 @@ def main():
 
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "stats.svg").write_text(render_stats(user, today))
-    (args.out / "languages.svg").write_text(render_languages(user, args.login))
+    (args.out / "languages.svg").write_text(render_languages(user))
+    (args.out / "hero.svg").write_text(hero([r["name"] for r in user["projects"]]))
     if args.readme:
-        update_readme(args.readme, render_recent(user, args.login))
+        update_readme(args.readme, render_recent(user))
 
 
 if __name__ == "__main__":

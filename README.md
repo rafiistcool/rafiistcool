@@ -1,22 +1,22 @@
 <p align="center">
-  <img src="./assets/hero.svg" width="100%" alt="Rafael Till: an Omarchy desktop with a terminal, an agent monitor and system info" />
+  <img src="https://raw.githubusercontent.com/rafiistcool/rafiistcool/output/hero.svg" width="100%" alt="Rafael Till: an Omarchy desktop with a terminal, an agent monitor and system info" />
 </p>
 
-Lately I've mostly been writing plugins for [Omarchy](https://omarchy.org), tuning Hyprland, and building small tools around AI coding agents.
+Lately I've mostly been building [Gelabber](https://github.com/Till-und-Scholler-AI-slop/Gelabber), a self-hosted chat, voice and screen-sharing server. Around it: [bookclub](https://github.com/rafiistcool/bookclub), plugins for [Omarchy](https://omarchy.org), and small tools around AI coding agents.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/rafiistcool/rafiistcool/output/stats.svg" width="49%" alt="Contributions, streaks, repos and pull requests" />
-  <img src="https://raw.githubusercontent.com/rafiistcool/rafiistcool/output/languages.svg" width="49%" alt="Languages across my public repos" />
+  <img src="https://raw.githubusercontent.com/rafiistcool/rafiistcool/output/languages.svg" width="49%" alt="Languages across the public repos I work on" />
 </p>
 
 ### Recently pushed
 
 <!-- RECENT:START -->
+- **[Gelabber](https://github.com/Till-und-Scholler-AI-slop/Gelabber)** · Self-hosted chat, voice & live screenshare (a calm Discord alternative) · `Rust`
+- **[bookclub](https://github.com/rafiistcool/bookclub)** · A private book club for 2–5 people: invite-only shelves, one shared pick, a spoiler-shielded diary · `Rust`
 - **[omarchy-protonvpn](https://github.com/rafiistcool/omarchy-protonvpn)** · Omarchy bar plugin for Proton VPN: toggle, country and city picker · `QML`
 - **[tillhome](https://github.com/rafiistcool/tillhome)** · Static homepage portal for tillhome.de — YAML-configurable subdomain link hub · `TypeScript`
 - **[omarchy-wireguard](https://github.com/rafiistcool/omarchy-wireguard)** · WireGuard profiles and configuration import for the Omarchy shell · `Python`
-- **[omarchy-kb-layout](https://github.com/rafiistcool/omarchy-kb-layout)** · Omarchy plugin to toggle Hyprland between US and German keyboard layouts · `Python`
-- **[ferrite](https://github.com/rafiistcool/ferrite)** · A modern terminal wrapper with built-in AI assistance — written in Rust · `Rust`
 <!-- RECENT:END -->
 
 <p align="center">

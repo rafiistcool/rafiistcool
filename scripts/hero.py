@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-"""Write assets/hero.svg: a small animated Hyprland desktop in the Omarchy theme.
+"""The hero: a small animated Hyprland desktop in the Omarchy theme. render.py writes it as hero.svg.
 
-    python3 scripts/hero.py
+The terminal's `ls ~/Projects` and the agent monitor show the projects pushed to most recently.
 
 Everything animates with SMIL so it plays inside GitHub's <img>. Static attribute values are the final
 frame, so viewers without SMIL still see the full picture.
 """
 
 from html import escape
-from pathlib import Path
 
-from render import FONT, THEME as T
+from theme import FONT, THEME as T
 
 W, H = 1200, 440
 LOOP = 14.0  # seconds
@@ -29,22 +28,17 @@ FS = 17  # terminal font size
 CW = FS * 0.6  # monospace advance
 CHAR_DELAY = 0.085
 
-# (command, baseline y, outputs). Output kinds: name, text, dirs.
-SCRIPT = [
-    ("whoami", 88, [("name", 148, "Rafael Till")]),
-    ("cat now.txt", 204, [("text", 234, ["omarchy plugins", "hyprland tweaks", "agent tooling"])]),
-    ("ls ~/Projects", 290, [
-        ("dirs", 320, "ferrite  omarchy-kb-layout  omarchy-protonvpn"),
-        ("dirs", 348, "omarchy-wireguard  tillhome  ti4-host-leitfaden"),
-    ]),
-]
+NOW = ["self-hosted apps", "omarchy plugins", "agent tooling"]
+DIR_YS = (320, 348)  # baselines of the ls output lines
+DIR_COLS = 56  # characters that fit across the terminal
+MAX_DIRS = 7
 FINAL_PROMPT_Y = 398
 
-# (agent, repo, [(start time, state)]); states cycle within the loop.
+# (agent, [(start time, state)]), one per row, on the most recently pushed projects; states cycle within the loop.
 AGENTS = [
-    ("claude", "omarchy-wireguard", [(0, "working")]),
-    ("codex", "tillhome", [(0, "working"), (6.2, "done")]),
-    ("claude", "ferrite", [(0, "idle"), (8.4, "working")]),
+    ("claude", [(0, "working")]),
+    ("codex", [(0, "working"), (6.2, "done")]),
+    ("claude", [(0, "idle"), (8.4, "working")]),
 ]
 
 FETCH_ROWS = [
@@ -118,7 +112,33 @@ def bar():
     return "\n".join(out)
 
 
-def terminal():
+def ls_lines(names):
+    """Lay names out the way ls does: sorted, two spaces apart, wrapped at the terminal's width."""
+    lines = []
+    for name in sorted(names, key=str.lower):
+        if lines and len(lines[-1]) + 2 + len(name) <= DIR_COLS:
+            lines[-1] += "  " + name
+        else:
+            lines.append(name)
+    return lines
+
+
+def pick_dirs(names):
+    """The most recently pushed projects, as many as fit the ls output."""
+    for n in range(min(MAX_DIRS, len(names)), 0, -1):
+        lines = ls_lines(names[:n])
+        if len(lines) <= len(DIR_YS) and all(len(line) <= DIR_COLS for line in lines):
+            return lines
+    return []
+
+
+def terminal(names):
+    # (command, baseline y, outputs). Output kinds: name, text, dirs.
+    script = [
+        ("whoami", 88, [("name", 148, "Rafael Till")]),
+        ("cat now.txt", 204, [("text", 234, NOW)]),
+        ("ls ~/Projects", 290, [("dirs", y, line) for y, line in zip(DIR_YS, pick_dirs(names))]),
+    ]
     x0 = LEFT[0] + 24
     px = x0 + 4 * CW  # after "~ ❯ "
     out, cursor = [tile(*LEFT, focused=True)], []
@@ -129,7 +149,7 @@ def terminal():
         arrow = text(x0 + 2 * CW, y, "❯", T["accent"], extra=' font-weight="700"')
         return f"<g>{anim}{text(x0, y, '~', T['blue'])}{arrow}</g>"
 
-    for n, (cmd, y, outputs) in enumerate(SCRIPT):
+    for n, (cmd, y, outputs) in enumerate(script):
         out.append(prompt(y, shown_at))
         cursor.append((shown_at, px, y))
         start = shown_at + (0.7 if n == 0 else 0.55)
@@ -160,7 +180,7 @@ def terminal():
 
     out.append(prompt(FINAL_PROMPT_Y, shown_at))
     cursor.append((shown_at, px, FINAL_PROMPT_Y))
-    cursor.append((RESET, px, SCRIPT[0][1]))
+    cursor.append((RESET, px, script[0][1]))
 
     xs = [(t, x) for t, x, _ in cursor]
     ys = [(t, y - FS + 3) for t, _, y in cursor]
@@ -172,7 +192,7 @@ def terminal():
     return "\n".join(out)
 
 
-def herdr():
+def herdr(names):
     x, y, w, h = HERDR
     left, right = x + 22, x + w - 22
     out = [
@@ -181,7 +201,7 @@ def herdr():
         text(right, y + 30, "agents", T["dim"], 14, ' text-anchor="end"'),
         f'<path d="M{left} {y + 44}H{right}" stroke="{T["border"]}" stroke-width="1.5"/>',
     ]
-    for i, (agent, repo, states) in enumerate(AGENTS):
+    for i, ((agent, states), repo) in enumerate(zip(AGENTS, names)):
         ry = y + 78 + i * 34
         out.append(text(left + 18, ry, agent, T["fg"], 16, ' font-weight="700"'))
         out.append(text(left + 102, ry, repo, T["muted"], 16))
@@ -240,7 +260,8 @@ def fastfetch():
     return "\n".join(out)
 
 
-def hero():
+def hero(names):
+    """names: project names, most recently pushed first."""
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-labelledby="title desc">
 <title id="title">Rafael Till</title>
 <desc id="desc">An animated Hyprland desktop: a terminal introducing Rafael Till, an agent monitor, and system info.</desc>
@@ -261,15 +282,10 @@ def hero():
 <rect width="{W}" height="{H}" fill="url(#sky)"/>
 <rect width="{W}" height="{H}" fill="url(#sun)"/>
 {bar()}
-{terminal()}
-{herdr()}
+{terminal(names)}
+{herdr(names)}
 {fastfetch()}
 </g>
 </svg>
 """
 
-
-if __name__ == "__main__":
-    path = Path(__file__).resolve().parent.parent / "assets" / "hero.svg"
-    path.write_text(hero())
-    print(f"wrote {path}")
