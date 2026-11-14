@@ -26,6 +26,8 @@ Lately I've mostly been building [Gelabber](https://github.com/Till-und-Scholler
 <div align="center">
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/archlinux/archlinux-original.svg" height="36" alt="Arch Linux" />
   <img width="10" />
+  <img src="https://cdn.simpleicons.org/omarchy" height="36" alt="Omarchy" />
+  <img width="10" />
   <img src="https://cdn.simpleicons.org/hyprland" height="36" alt="Hyprland" />
   <img width="10" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/neovim/neovim-original.svg" height="36" alt="Neovim" />
@@ -35,6 +37,8 @@ Lately I've mostly been building [Gelabber](https://github.com/Till-und-Scholler
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/qt/qt-original.svg" height="36" alt="Qt / QML" />
   <img width="10" />
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" height="36" alt="TypeScript" />
+  <img width="10" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" height="36" alt="Java" />
   <img width="10" />
   <img src="https://cdn.simpleicons.org/rust/000000/ffffff" height="36" alt="Rust" />
   <img width="10" />
